@@ -463,8 +463,8 @@ class Statement extends PDOStatement
                 $schema    = isset($options['schema']) ? $options['schema'] : '';
                 $type_name = isset($options['type_name']) ? $options['type_name'] : '';
 
-                // set params required to use custom type.
-                $variable = $this->connection->getNewCollection($type_name, $schema);
+                // set params required and fill values to use custom type.
+                $variable = $this->fillCollection($this->connection->getNewCollection($type_name, $schema), $variable);
                 break;
 
             case SQLT_CLOB:
@@ -490,6 +490,21 @@ class Statement extends PDOStatement
         $this->bindings[] = &$variable;
 
         return oci_bind_by_name($this->sth, $parameter, $variable, $maxLength, $ociType);
+    }
+
+    /**
+     * Fill OCI collection with array values
+     * @param \OCI_Collection $collection
+     * @param array $values
+     * @returns \OCI_Collection
+     */
+    public function fillCollection($collection, $values)
+    {
+        foreach ($values as $value) {
+            $collection->append($value);
+        }
+        
+        return $collection;
     }
 
     /**
